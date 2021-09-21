@@ -1,16 +1,13 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
-
-from resource.global_ import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
 from resource.token import get_current_active_user
 from .schemas import ItemCreate, Item, Comment, CommentCreate
 from ..authorization.models import User
 from .db import create_user_item, get_items_db, get_item_db, \
     create_comment_item, get_comments_db
-from ..authorization.db import get_user
+from ...db.database import get_session
 
 router = APIRouter()
 
@@ -19,9 +16,9 @@ router = APIRouter()
 async def create_items(
         item: ItemCreate,
         user: User = Depends(get_current_active_user),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_session)
 ):
-    db_item = create_user_item(db, item=item, user_id=user.id)
+    db_item = await create_user_item(db, item=item, user_id=user.id)
     if not db_item:
         raise HTTPException(status_code=400, detail="Not save item")
 
@@ -32,10 +29,10 @@ async def create_items(
 async def get_items(
         skip: int = 0,
         limit: int = 100,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_session)
 ):
 
-    items = get_items_db(skip=skip, limit=limit, db=db)
+    items = await get_items_db(skip=skip, limit=limit, db=db)
 
     return items
 
@@ -43,9 +40,9 @@ async def get_items(
 @router.get("/{item_id}", response_model=Item)
 async def get_item(
         item_id: int,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_session)
 ):
-    item = get_item_db(item_id=item_id, db=db)
+    item = await get_item_db(item_id=item_id, db=db)
 
     return item
 
@@ -55,9 +52,9 @@ async def create_comment(
         item_id: int,
         comment: CommentCreate,
         user: User = Depends(get_current_active_user),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_session)
 ):
-    db_comment = create_comment_item(
+    db_comment = await create_comment_item(
         db,
         comment=comment,
         user_id=user.id,
@@ -74,8 +71,13 @@ async def get_comments(
         item_id: int,
         skip: int = 0,
         limit: int = 100,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_session)
 ):
-    comments = get_comments_db(skip=skip, limit=limit, db=db, item_id=item_id)
+    comments = await get_comments_db(
+        skip=skip,
+        limit=limit,
+        db=db,
+        item_id=item_id
+    )
 
     return comments

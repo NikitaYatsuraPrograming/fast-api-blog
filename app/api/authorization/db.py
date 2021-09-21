@@ -1,12 +1,15 @@
 from fastapi import Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from resource.global_ import pwd_context, get_db
-from . import models, schemas
+from resource.global_ import pwd_context
 from .schemas import UserCreate
+from .models import User
+from sqlalchemy.future import select
 
 
 def verify_password(plain_password, hashed_password):
+    print("@###" *10, pwd_context.verify(plain_password, hashed_password))
     return pwd_context.verify(plain_password, hashed_password)
 
 
@@ -14,34 +17,45 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.id == user_id).first()
+async def get_user(db: AsyncSession, user_id: int):
+    result = await db.execute(select(User).filter(User.id == user_id))
+
+    return result.scalars().first()
 
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+async def get_user_by_email(db: AsyncSession, email: str):
+    result = await db.execute(select(User).filter(User.email == email))
+
+    return result.scalars().first()
 
 
-def get_user_by_username(db: Session, username: str):
-    return db.query(models.User).filter(models.User.username == username).first()
+async def get_user_by_username(db: AsyncSession, username: str):
+    result = await db.execute(select(User).filter(User.username == username))
+
+    return result.scalars().first()
 
 
-def create_user(db: Session, user: schemas.UserCreate):
-    db_user = models.User(
+async def create_user_db(db: AsyncSession, user: UserCreate):
+    db_user = User(
         email=user.email,
         password=get_password_hash(user.password),
         username=user.username
     )
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    try:
+        await db.commit()
+        await db.refresh(db_user)
+    except IntegrityError as ex:
+        await db.rollback()
+    else:
+        return db_user
 
 
-def authenticate_user(db: Session, username: str, password: str):
-    user = get_user_by_username(db=db, username=username)
+async def authenticate_user(db: AsyncSession, username: str, password: str):
+    user = await get_user_by_username(db=db, username=username)
     if not user:
         return False
-    if not verify_password(password, user.password):
+    if not verify_password(plain_password=password,
+                           hashed_password=user.password):
         return False
     return user

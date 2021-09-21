@@ -3,11 +3,13 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException, status
 from jose import jwt, JWTError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from app.api.authorization.db import get_user
 from app.api.authorization.schemas import TokenData, User
-from resource.global_ import SECRET_KEY, ALGORITHM, oauth2_scheme, get_db
+from app.db.database import get_session
+from resource.global_ import SECRET_KEY, ALGORITHM, oauth2_scheme
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -23,7 +25,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 async def get_current_user(
         token: str = Depends(oauth2_scheme),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_session)
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -38,7 +40,7 @@ async def get_current_user(
         token_data = TokenData(user_id=user_id)
     except JWTError:
         raise credentials_exception
-    user = get_user(db=db, user_id=token_data.user_id)
+    user = await get_user(db=db, user_id=token_data.user_id)
     if user is None:
         raise credentials_exception
     return user

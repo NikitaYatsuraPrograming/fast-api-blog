@@ -1,8 +1,6 @@
 from pydantic import BaseModel, Field, Json
 from datetime import datetime
-from typing import List, Optional, Dict, Type
-
-from typing_extensions import TypedDict
+from typing import List, Optional
 
 
 class ItemBase(BaseModel):
@@ -44,6 +42,7 @@ class Item(ItemBase):
     create_date: Optional[datetime]
     owner_id: int
     owner: OwnerItem
+    comments: List[Comment]
 
     class Config:
         orm_mode = True
