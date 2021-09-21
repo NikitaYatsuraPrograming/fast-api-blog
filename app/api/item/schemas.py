@@ -14,9 +14,12 @@ class ItemCreate(ItemBase):
     pass
 
 
-class OwnerItem(TypedDict):
+class OwnerItem(BaseModel):
     username: str
     create_date: Optional[datetime]
+
+    class Config:
+        orm_mode = True
 
 
 class CommentBase(BaseModel):

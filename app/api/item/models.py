@@ -15,8 +15,8 @@ class Item(Base):
     description = Column(String, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
     create_date = Column(DateTime, default=datetime.datetime.utcnow)
-    owner = relationship("User", back_populates="items")
-    comments = relationship("Comment", back_populates="item")
+    owner = relationship("User", back_populates="items", lazy="joined")
+    comments = relationship("Comment", back_populates="item", lazy="joined")
 
 
 class Comment(Base):
@@ -28,5 +28,5 @@ class Comment(Base):
     item_id = Column(Integer, ForeignKey("items.id"))
     text = Column(String, index=True)
 
-    owner = relationship("User", back_populates="comments")
-    item = relationship("Item", back_populates="comments")
+    owner = relationship("User", back_populates="comments", lazy="joined")
+    item = relationship("Item", back_populates="comments", lazy="joined")

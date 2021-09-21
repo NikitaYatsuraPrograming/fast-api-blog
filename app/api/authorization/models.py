@@ -16,5 +16,5 @@ class User(Base):
     password = Column(String)
     is_active = Column(Boolean, default=True)
 
-    items = relationship("Item", back_populates="owner")
-    comments = relationship("Comment", back_populates="owner")
+    items = relationship("Item", back_populates="owner", lazy="joined")
+    comments = relationship("Comment", back_populates="owner", lazy="joined")
