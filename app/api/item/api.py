@@ -24,9 +24,7 @@ async def create_items(
     db_item = create_user_item(db, item=item, user_id=user.id)
     if not db_item:
         raise HTTPException(status_code=400, detail="Not save item")
-    owner = jsonable_encoder(db_item.owner)
-    db_item = jsonable_encoder(db_item)
-    db_item['owner'] = owner
+
     return db_item
 
 
@@ -36,14 +34,10 @@ async def get_items(
         limit: int = 100,
         db: Session = Depends(get_db)
 ):
-    update_items = []
+
     items = get_items_db(skip=skip, limit=limit, db=db)
-    for item in items:
-        owner = jsonable_encoder(item.owner)
-        item = jsonable_encoder(item)
-        item['owner'] = owner
-        update_items.append(item)
-    return update_items
+
+    return items
 
 
 @router.get("/{item_id}", response_model=Item)
@@ -52,9 +46,6 @@ async def get_item(
         db: Session = Depends(get_db)
 ):
     item = get_item_db(item_id=item_id, db=db)
-    owner = jsonable_encoder(item.owner)
-    item = jsonable_encoder(item)
-    item['owner'] = owner
 
     return item
 
@@ -75,9 +66,6 @@ async def create_comment(
     if not db_comment:
         raise HTTPException(status_code=400, detail="Not save comments")
 
-    owner = jsonable_encoder(db_comment.owner)
-    db_comment = jsonable_encoder(db_comment)
-    db_comment['owner'] = owner
     return db_comment
 
 
@@ -88,12 +76,6 @@ async def get_comments(
         limit: int = 100,
         db: Session = Depends(get_db)
 ):
-    update_comments = []
     comments = get_comments_db(skip=skip, limit=limit, db=db, item_id=item_id)
-    for comment in comments:
-        owner = jsonable_encoder(comment.owner)
-        comment = jsonable_encoder(comment)
-        comment['owner'] = owner
-        update_comments.append(comment)
 
-    return update_comments
+    return comments

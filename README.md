@@ -1,6 +1,6 @@
 # FastAPI Blog
 
-> Note that Python 3.9, PosrgreSQL 13
+> Note that Python 3.9, PosrtgreSQL 13
 
 ### Installation
 1. create virtualenv with python3.9 `virtualenv venv` or `virtualenv -p /path/to/python3.9` if your default python version is different
