@@ -12,7 +12,7 @@ class ItemCreate(ItemBase):
     pass
 
 
-class OwnerItem(BaseModel):
+class ItemOwner(BaseModel):
     username: str
     create_date: Optional[datetime]
 
@@ -30,7 +30,7 @@ class CommentCreate(CommentBase):
 
 class Comment(CommentBase):
     owner_id = int
-    owner: OwnerItem
+    owner: ItemOwner
     create_date: Optional[datetime]
 
     class Config:
@@ -41,7 +41,7 @@ class Item(ItemBase):
     id: int
     create_date: Optional[datetime]
     owner_id: int
-    owner: OwnerItem
+    owner: ItemOwner
     comments: List[Comment]
 
     class Config:

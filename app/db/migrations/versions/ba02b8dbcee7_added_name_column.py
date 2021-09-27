@@ -1,7 +1,6 @@
 """Added name column
 
 Revision ID: ba02b8dbcee7
-Revises: cf038bb2ec50
 Create Date: 2021-09-22 13:57:28.544480
 
 """
@@ -11,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'ba02b8dbcee7'
-down_revision = 'cf038bb2ec50'
+down_revision = None
 branch_labels = None
 depends_on = None
 
